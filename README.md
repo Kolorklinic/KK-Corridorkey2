@@ -1,5 +1,9 @@
 # CorridorKey 2 for Resolve
 
+> **Intel Mac (x86_64) build.** This is a modified copy of [creativevideotips/cvt-corridorkey2](https://github.com/creativevideotips/cvt-corridorkey2) by Creative Video Tips, under the same licence (CC BY-NC-SA 4.0 with the CorridorKey additional terms). The only change is that the plugin and its OpenEXR/Imath libraries build for x86_64 instead of arm64 (`CMakeLists.txt`, `third_party/build_openexr.sh`).
+>
+> **Limitation:** the OFX plugin loads in Resolve on Intel, but the model setup (**Install Model**) and the Python worker still require Apple Silicon (PyTorch 2.15 and the Apple GPU). Keying does not run on Intel Macs yet. The text below is the original README.
+
 **Corridor Digital's AI green-screen keyer in DaVinci Resolve, on your Mac.** An OpenFX plugin for Resolve's Fusion and Edit pages and Fusion Studio that keys green and blue screens with [CorridorKey 2.0](https://github.com/nikopueringer/CorridorKey2.0) by Corridor Digital, running on the Mac's own GPU. Hair, fur, motion blur and uneven screens key cleanly with no keyer settings, and a rough garbage matte on its Hint input removes anything outside the screen.
 
 From [Creative Video Tips](https://creativevideotips.com), created by Chadwick. Always free. This is an unofficial plugin, not made or endorsed by Corridor Digital or Blackmagic Design. CorridorKey 2.0 itself runs on NVIDIA graphics cards; this plugin brings it to Apple Silicon Macs.
