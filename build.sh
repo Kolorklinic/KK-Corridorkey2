@@ -31,6 +31,7 @@ UV_BIN=$(readlink -f "$(command -v uv)")
 UV_DIR=$(dirname "$(dirname "$UV_BIN")")
 mkdir -p "$B/Contents/Resources/setup/bin" "$B/Contents/Resources/setup/wheels"
 cp setup/ck2_setup.sh "setup/Install CorridorKey Model.command" setup/requirements-lock.txt \
+   setup/requirements-lock-intel.txt \
    setup/corridorkey_files.sha256 setup/weights.sha256 "$B/Contents/Resources/setup/"
 cp setup/wheels/*.whl "$B/Contents/Resources/setup/wheels/"
 cp "$UV_BIN" "$B/Contents/Resources/setup/bin/uv"

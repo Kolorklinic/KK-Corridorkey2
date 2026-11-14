@@ -46,6 +46,12 @@ MEM_BASE_GB = 8.0
 MEM_PER_FRAME_GB = 0.95
 MEM_REF_PIXELS = 1920 * 1152
 MEM_USE_FRACTION = 0.85      # leave room for the host app
+# Intel Macs (AMD GPU, PyTorch 2.2, fp32), measured 2026-11-14 on a Radeon
+# RX 6700 XT (12 GB) at HD: 13.5 / 16.4 / 19.9 GB for windows of 2 / 4 / 8.
+# PyTorch lets MPS use up to 1.7x the VRAM (the rest spills to system RAM).
+if os.uname().machine == "x86_64":
+    MEM_BASE_GB = 12.0
+    MEM_PER_FRAME_GB = 1.1
 _T0 = time.time()
 
 
@@ -145,16 +151,25 @@ def chip_generation(brand: str) -> int:
 
 
 def choose_precision(brand: str) -> str:
-    """bf16 on M5 and later (native support); fp16 is faster on M1-M4."""
+    """bf16 on M5 and later (native support); fp16 is faster on M1-M4.
+    Intel Macs (AMD GPU, PyTorch 2.2): fp32, the only precision that works."""
+    if "Apple" not in brand:
+        return "fp32"
     return "bf16" if chip_generation(brand) >= 5 else "fp16"
 
 
 def mac_brand() -> str:
     try:
-        return subprocess.run(["sysctl", "-n", "machdep.cpu.brand_string"],
-                              capture_output=True, text=True).stdout.strip()
+        cpu = subprocess.run(["sysctl", "-n", "machdep.cpu.brand_string"],
+                             capture_output=True, text=True).stdout.strip()
     except OSError:
-        return ""
+        cpu = ""
+    if cpu and "Apple" not in cpu:             # Intel: name the GPU that does the work
+        import ck2_mps
+        gpu = ck2_mps.gpu_name()
+        if gpu:
+            return f"{gpu} ({cpu})"
+    return cpu
 
 
 def available_system_gb() -> float:
@@ -205,10 +220,10 @@ def frame_size(path: str) -> tuple[int, int]:
 
 
 def make_plan(job: dict, frames: list[str]) -> dict:
-    import torch
+    import ck2_mps
     width, height = frame_size(frames[0])
     brand = mac_brand()
-    gpu_gb = torch.mps.recommended_max_memory() / 2**30
+    gpu_gb = ck2_mps.usable_memory() / 2**30
     budget = min(gpu_gb, available_system_gb()) * MEM_USE_FRACTION
     if job["window"] == "auto":
         window = choose_window(width, height, len(frames), budget)
@@ -339,7 +354,7 @@ def check(model_dir: str) -> None:
     import corridorkey.runtime as rt
     t0 = time.time()
     model = rt.load_model(rt.RuntimePaths.from_package(model_dir), device="mps")
-    gpu_gb = torch.mps.recommended_max_memory() / 2**30
+    gpu_gb = ck2_mps.usable_memory() / 2**30
     del model
     emit("check", ok=True, mac=brand, precision=precision, gpu_gb=round(gpu_gb, 1),
          hd_window=choose_window(1920, 1080, 10**6, gpu_gb * MEM_USE_FRACTION),

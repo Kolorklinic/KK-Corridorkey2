@@ -785,7 +785,7 @@ void CorridorKey2Factory::describe(OFX::ImageEffectDescriptor& desc) {
     desc.setPluginGrouping("Creative Video Tips");
     desc.setPluginDescription(
         "CorridorKey 2 for Resolve (unofficial). Keys green and blue screens with "
-        "CorridorKey 2.0 by Corridor Digital, on Apple Silicon. By Creative Video Tips.");
+        "CorridorKey 2.0 by Corridor Digital, on the Mac's GPU. By Creative Video Tips.");
     // Filter (Edit page) and General (Fusion page, with the Hint input). The
     // 0.06-0.12 Process freezes were setValue before fetchImage, not the
     // General context (0.11-0.13 offered Filter only while that was found).

@@ -1,8 +1,15 @@
 # CorridorKey 2 for Resolve
 
-> **Intel Mac (x86_64) build.** This is a modified copy of [creativevideotips/cvt-corridorkey2](https://github.com/creativevideotips/cvt-corridorkey2) by Creative Video Tips, under the same licence (CC BY-NC-SA 4.0 with the CorridorKey additional terms). The only change is that the plugin and its OpenEXR/Imath libraries build for x86_64 instead of arm64 (`CMakeLists.txt`, `third_party/build_openexr.sh`).
+> **Intel Mac + AMD Radeon build.** This is a modified copy of [creativevideotips/cvt-corridorkey2](https://github.com/creativevideotips/cvt-corridorkey2) by Creative Video Tips, under the same licence (CC BY-NC-SA 4.0 with the CorridorKey additional terms). Not made or endorsed by Creative Video Tips or Corridor Digital.
 >
-> **Limitation:** the OFX plugin loads in Resolve on Intel, but the model setup (**Install Model**) and the Python worker still require Apple Silicon (PyTorch 2.15 and the Apple GPU). Keying does not run on Intel Macs yet. The text below is the original README.
+> **What changed:**
+> - The plugin and its OpenEXR/Imath libraries build for x86_64 (`CMakeLists.txt`, `third_party/build_openexr.sh`).
+> - **Install Model** accepts Intel Macs and installs PyTorch 2.2.2, the last PyTorch for Intel Macs (`setup/ck2_setup.sh`, `setup/requirements-lock-intel.txt`).
+> - The worker runs CorridorKey on the AMD GPU through Metal (`worker/ck2_mps.py`, `worker/ck2_worker.py`). PyTorch 2.2 lacks a few things CorridorKey uses, so the adapter adds `F.rms_norm`/`nn.RMSNorm`, runs in fp32 (no bfloat16 or autocast on AMD), computes attention in slices of queries (AMD GPUs cap single buffers at a few GB), and does bicubic resizes on the CPU.
+>
+> **Tested** on a Radeon RX 6700 XT (12 GB) with an i9-11900KF and 64 GB, macOS 14.7: about **10.5 seconds per HD frame**, and **Auto** keys 4 frames per chunk (PyTorch lets the GPU use up to 1.7× its VRAM, spilling into system RAM; 8 frames is the most that fits). Results match the Apple Silicon version. Other AMD cards should work; cards with less VRAM get smaller chunks. Not tested with Intel integrated graphics.
+>
+> The text below is the original README, written for Apple Silicon.
 
 **Corridor Digital's AI green-screen keyer in DaVinci Resolve, on your Mac.** An OpenFX plugin for Resolve's Fusion and Edit pages and Fusion Studio that keys green and blue screens with [CorridorKey 2.0](https://github.com/nikopueringer/CorridorKey2.0) by Corridor Digital, running on the Mac's own GPU. Hair, fur, motion blur and uneven screens key cleanly with no keyer settings, and a rough garbage matte on its Hint input removes anything outside the screen.
 

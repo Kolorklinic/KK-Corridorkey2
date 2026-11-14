@@ -14,7 +14,8 @@
 #   3. Builds a private Python for it (Python 3.12 and pinned packages).
 #   4. Downloads the weights (about 5 GB: CorridorKey's own and the three
 #      foundation models it uses) and checks them the same way.
-#   5. Loads the model once on the Apple GPU to confirm it works.
+#   5. Loads the model once on the GPU to confirm it works (Apple Silicon,
+#      or the AMD GPU of an Intel Mac).
 # Safe to run again: finished steps are checked and skipped.
 #
 # Options:
@@ -52,7 +53,12 @@ fail() { printf '\nSTOPPED: %s\n' "$*"; exit 1; }
 
 say "CorridorKey 2 for Resolve - model setup"
 echo "  Folder: $FOLDER"
-[ "$(uname -m)" = "arm64" ] || fail "this needs an Apple Silicon Mac."
+ARCH="$(uname -m)"
+case "$ARCH" in
+    arm64) LOCK="$HERE/requirements-lock.txt"; GPU="the Apple GPU" ;;
+    x86_64) LOCK="$HERE/requirements-lock-intel.txt"; GPU="the AMD GPU" ;;   # PyTorch 2.2.2, fp32
+    *) fail "this Mac ($ARCH) isn't supported." ;;
+esac
 mkdir -p "$FOLDER" || fail "can't create $FOLDER"
 chmod 700 "$FOLDER"
 FREE_GB=$(df -g "$FOLDER" | awk 'NR==2 {print $4}')
@@ -110,10 +116,10 @@ if [ ! -x "$PY" ]; then
     "$UV" venv -q --python 3.12 --python-preference only-managed "$FOLDER/.venv" \
         || fail "could not set up Python 3.12."
 fi
-"$UV" pip install -q --python "$PY" -r "$HERE/requirements-lock.txt" "$HERE"/wheels/*.whl \
+"$UV" pip install -q --python "$PY" -r "$LOCK" "$HERE"/wheels/*.whl \
     || fail "package install failed."
 "$PY" -c "import torch; assert torch.backends.mps.is_available()" 2>/dev/null \
-    || fail "PyTorch can't use the Apple GPU on this Mac."
+    || fail "PyTorch can't use $GPU on this Mac."
 rm -rf "$UV_CACHE_DIR"                      # downloaded packages, no longer needed
 echo "  Python $("$PY" -c 'import sys; print(sys.version.split()[0])'), PyTorch $("$PY" -c 'import torch; print(torch.__version__)')"
 
@@ -139,7 +145,7 @@ else
 fi
 
 # --- 5. check --------------------------------------------------------------------
-say "Loading the model on the Apple GPU (a few seconds)"
+say "Loading the model on $GPU (a few seconds)"
 RESULT=$("$PY" "$WORKER" check "$CODE" 2> "$FOLDER/setup-check.log" | tail -1)
 case "$RESULT" in
     *'"ok": true'*) ;;
