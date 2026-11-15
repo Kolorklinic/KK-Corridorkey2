@@ -16,4 +16,4 @@ sudo mkdir -p /Library/OFX/Plugins
 sudo rm -rf /Library/OFX/Plugins/CorridorKey2.ofx.bundle
 sudo cp -R "$B" /Library/OFX/Plugins/
 echo "Installed CorridorKey 2 for Resolve $(defaults read "$PWD/$B/Contents/Info" CFBundleShortVersionString)."
-echo "In Fusion: Effects > OpenFX > Creative Video Tips > CorridorKey 2."
+echo "In Fusion: Effects > OpenFX > KolorKlinic > CorridorKey 2."

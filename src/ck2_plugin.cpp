@@ -849,10 +849,10 @@ mDeclarePluginFactory(CorridorKey2Factory, {}, {});
 
 void CorridorKey2Factory::describe(OFX::ImageEffectDescriptor& desc) {
     desc.setLabels("CorridorKey 2", "CorridorKey 2", "CorridorKey 2");
-    desc.setPluginGrouping("Creative Video Tips");
+    desc.setPluginGrouping("KolorKlinic");
     desc.setPluginDescription(
         "CorridorKey 2 for Resolve (unofficial). Keys green and blue screens with "
-        "CorridorKey 2.0 by Corridor Digital, on the Mac's GPU. By Creative Video Tips.");
+        "CorridorKey 2.0 by Corridor Digital, on the Mac's GPU (Apple Silicon or AMD). By KolorKlinic.");
     // Filter (Edit page) and General (Fusion page, with the Hint input). The
     // 0.06-0.12 Process freezes were setValue before fetchImage, not the
     // General context (0.11-0.13 offered Filter only while that was found).
@@ -1072,7 +1072,7 @@ void CorridorKey2Factory::describeInContext(OFX::ImageEffectDescriptor& desc, OF
     const std::string setupTitle = std::string("Setup \u00b7 Version ") + ck2::kVersion;
     auto* gSetup = group(desc, page, "groupSetup", setupTitle.c_str(), false);
     gSetup->setHint("CorridorKey 2 for Resolve " + std::string(ck2::kVersion) +
-                    ": OFX by Creative Video Tips, model by Corridor Digital. An unofficial plugin; "
+                    ": by KolorKlinic, based on the OFX by Creative Video Tips; model by Corridor Digital. Unofficial; "
                     "CC BY-NC-SA 4.0 with the CorridorKey terms.");
     // Precision is picked for each Mac (fp16 on M1 to M4, bf16 on M5 and later);
     // kept as a hidden param so saved comps and the cache names still match.

@@ -102,7 +102,7 @@ def main() -> int:
     row = tk.Frame(frame, bg=CHARCOAL)
     row.pack(fill="x")
     # The model is Corridor Digital's; only the plugin is ours.
-    tk.Label(row, text="OFX by Creative Video Tips", bg=CHARCOAL, fg=MUTED,
+    tk.Label(row, text="KolorKlinic", bg=CHARCOAL, fg=MUTED,
              font=("Helvetica", 10)).pack(side="left")
 
     state = {"finished": False, "determinate": False}
