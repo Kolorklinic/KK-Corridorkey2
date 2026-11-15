@@ -47,7 +47,7 @@ Put CorridorKey 2 after your clip and press **Process**. A progress window shows
 - **Temporal Chunks:** how many frames CorridorKey keys together. Auto picks the longest the Mac's memory allows; Status reports what it used ("2 chunks of 80 frames").
 - **Output:** Premultiplied, Matte Only, Unpremultiplied (the cleaned foreground with the matte as alpha), or Source + Matte (Unpremultiplied) (your untouched picture with the matte as alpha).
 - **Hint:** a rough matte of the subject (a rectangle, Magic Mask or roto) on the Hint input, or in the source's alpha on the Edit page. At a strength of 0.3 to 0.5 it removes anything outside it and keeps CorridorKey's own edges.
-- **Frames that aren't processed** show the picture in diagonal stripes with a red frame; a yellow frame means the picture changed since Process. Scrub once before you deliver.
+- **Frames that aren't processed** show the picture with a red frame and **NOT PROCESSED - PRESS PROCESS** across the middle; a yellow frame and **PICTURE CHANGED - PRESS PROCESS AGAIN** mean the picture changed since Process. Scrub once before you deliver.
 - **Edit page:** after Process, move the playhead once to see the result.
 
 The guide has the details.

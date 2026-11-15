@@ -16,8 +16,10 @@
 
 #include "ofxsImageEffect.h"
 
+#include <algorithm>
 #include <chrono>
 #include <cmath>
+#include <cstring>
 #include <ctime>
 #include <dlfcn.h>
 #include <filesystem>
@@ -689,6 +691,66 @@ void CorridorKey2Effect::getClipPreferences(OFX::ClipPreferencesSetter& prefs) {
         : OFX::eImageUnPreMultiplied);
 }
 
+// --- Status label drawn on frames without a result -------------------------
+
+namespace {
+
+// 5x7 capitals for the status label; each row is 5 bits, left pixel first.
+const unsigned char* glyph(char c) {
+    static const unsigned char kBlank[7] = {0, 0, 0, 0, 0, 0, 0};
+    static const unsigned char kDash[7] = {0, 0, 0, 0x1F, 0, 0, 0};
+    static const unsigned char kLetters[26][7] = {
+        {0x0E, 0x11, 0x11, 0x1F, 0x11, 0x11, 0x11}, {0x1E, 0x11, 0x11, 0x1E, 0x11, 0x11, 0x1E},
+        {0x0E, 0x11, 0x10, 0x10, 0x10, 0x11, 0x0E}, {0x1E, 0x11, 0x11, 0x11, 0x11, 0x11, 0x1E},
+        {0x1F, 0x10, 0x10, 0x1E, 0x10, 0x10, 0x1F}, {0x1F, 0x10, 0x10, 0x1E, 0x10, 0x10, 0x10},
+        {0x0E, 0x11, 0x10, 0x17, 0x11, 0x11, 0x0F}, {0x11, 0x11, 0x11, 0x1F, 0x11, 0x11, 0x11},
+        {0x0E, 0x04, 0x04, 0x04, 0x04, 0x04, 0x0E}, {0x07, 0x02, 0x02, 0x02, 0x02, 0x12, 0x0C},
+        {0x11, 0x12, 0x14, 0x18, 0x14, 0x12, 0x11}, {0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x1F},
+        {0x11, 0x1B, 0x15, 0x15, 0x11, 0x11, 0x11}, {0x11, 0x11, 0x19, 0x15, 0x13, 0x11, 0x11},
+        {0x0E, 0x11, 0x11, 0x11, 0x11, 0x11, 0x0E}, {0x1E, 0x11, 0x11, 0x1E, 0x10, 0x10, 0x10},
+        {0x0E, 0x11, 0x11, 0x11, 0x15, 0x12, 0x0D}, {0x1E, 0x11, 0x11, 0x1E, 0x14, 0x12, 0x11},
+        {0x0F, 0x10, 0x10, 0x0E, 0x01, 0x01, 0x1E}, {0x1F, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04},
+        {0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x0E}, {0x11, 0x11, 0x11, 0x11, 0x11, 0x0A, 0x04},
+        {0x11, 0x11, 0x11, 0x15, 0x15, 0x15, 0x0A}, {0x11, 0x11, 0x0A, 0x04, 0x0A, 0x11, 0x11},
+        {0x11, 0x11, 0x0A, 0x04, 0x04, 0x04, 0x04}, {0x1F, 0x01, 0x02, 0x04, 0x08, 0x10, 0x1F},
+    };
+    if (c >= 'A' && c <= 'Z') return kLetters[c - 'A'];
+    if (c == '-') return kDash;
+    return kBlank;
+}
+
+// Where the label goes on a frame (in the frame's own pixel coordinates).
+struct Label {
+    const char* text = "";
+    int len = 0, px = 1;          // characters, size of one font pixel
+    int x0 = 0, x1 = 0;           // text left/right
+    int bandTop = 0, bandBottom = 0;   // band rows [bandBottom, bandTop)
+
+    Label(const char* t, const OfxRectI& b) : text(t), len(static_cast<int>(std::strlen(t))) {
+        const int w = b.x2 - b.x1, h = b.y2 - b.y1;
+        px = std::max(1, std::min((w * 7 / 10) / (len * 6), h / 30));
+        const int tw = len * 6 * px - px;
+        x0 = b.x1 + (w - tw) / 2;
+        x1 = x0 + tw;
+        const int bandH = 15 * px;                  // 7 rows of text, 4 of padding each side
+        bandBottom = b.y1 + (h - bandH) / 2;
+        bandTop = bandBottom + bandH;
+    }
+    bool inBand(int y) const { return y >= bandBottom && y < bandTop; }
+    // Is (x, y) a lit pixel of the text?
+    bool ink(int x, int y) const {
+        if (x < x0 || x >= x1) return false;
+        const int row = (bandTop - 1 - y) / px - 4;          // OFX rows go up; text rows go down
+        if (row < 0 || row > 6) return false;
+        const int col = (x - x0) / px;
+        const int cx = col % 6;
+        if (cx == 5) return false;
+        return (glyph(text[col / 6])[row] >> (4 - cx)) & 1;
+    }
+};
+
+}  // namespace
+
 // --- Render: draw from the cache ------------------------------------------
 
 void CorridorKey2Effect::render(const OFX::RenderArguments& args) {
@@ -748,6 +810,10 @@ void CorridorKey2Effect::render(const OFX::RenderArguments& args) {
 
     const int border = std::max(4, (sb.x2 - sb.x1) / 200);
     const float zero[4] = {0, 0, 0, 0};
+    // Not processed: red frame and label. Picture changed since Process: yellow.
+    const Label label(changed ? "PICTURE CHANGED - PRESS PROCESS AGAIN"
+                              : "NOT PROCESSED - PRESS PROCESS", sb);
+    const float mark[3] = {1.0f, changed ? 0.85f : 0.15f, changed ? 0.0f : 0.1f};
     for (int y = rw.y1; y < rw.y2; ++y) {
         if (abort()) return;
         float* d = static_cast<float*>(dst->getPixelAddress(rw.x1, y));
@@ -759,16 +825,17 @@ void CorridorKey2Effect::render(const OFX::RenderArguments& args) {
                 const size_t i = (static_cast<size_t>(sb.y2 - 1 - y) * cached.width + (x - sb.x1)) * 4;
                 ck2::composePixel(look, &cached.pixels[i], cached.pixels[i + 3], s, d);
             } else if (inside) {
-                // Not processed (red frame) or picture changed since Process (yellow
-                // frame): the source, dimmed in diagonal stripes.
+                // No result for this frame: the source as it is, with a coloured
+                // frame and a label across the middle saying what to do.
                 const bool edge = x < sb.x1 + border || x >= sb.x2 - border ||
                                   y < sb.y1 + border || y >= sb.y2 - border;
-                const bool stripe = (((x - sb.x1) + (y - sb.y1)) / 48) % 2 == 0;
-                if (edge) { d[0] = 1.0f; d[1] = changed ? 0.85f : 0.0f; d[2] = 0.0f; d[3] = 1.0f; }
-                else {
-                    const float k = stripe ? 0.45f : 1.0f;
-                    d[0] = s[0] * k; d[1] = s[1] * k; d[2] = s[2] * k; d[3] = 1.0f;
+                if (edge || label.ink(x, y)) {
+                    d[0] = mark[0]; d[1] = mark[1]; d[2] = mark[2];
+                } else {
+                    const float k = label.inBand(y) ? 0.2f : 1.0f;   // dark band behind the text
+                    d[0] = s[0] * k; d[1] = s[1] * k; d[2] = s[2] * k;
                 }
+                d[3] = 1.0f;
             } else {
                 d[0] = d[1] = d[2] = d[3] = 0.0f;
             }
@@ -990,7 +1057,7 @@ void CorridorKey2Factory::describeInContext(OFX::ImageEffectDescriptor& desc, OF
     auto* clear = desc.definePushButtonParam(kClearCache);
     clear->setLabels("Delete Cache", "Delete Cache", "Delete Cache");
     clear->setHint("Deletes this node's stored results (other nodes keep theirs). Its frames "
-                   "show stripes until the next Process.");
+                   "show NOT PROCESSED until the next Process.");
     clear->setParent(*gCache);
     page->addChild(*clear);
     auto* clearAll = desc.definePushButtonParam(kClearAllCache);
