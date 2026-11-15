@@ -4,7 +4,7 @@
 
 By KolorKlinic. Free and unofficial: not made or endorsed by Corridor Digital or Blackmagic Design.
 
-![A green-screen shot of a dog, and the same frame keyed by CorridorKey 2 over a checkerboard](corridorkey2_example.jpg)
+![A man in front of a green screen, and the same frame keyed by CorridorKey 2 over a checkerboard](corridorkey2_example.jpg)
 
 ## Is it for you?
 
