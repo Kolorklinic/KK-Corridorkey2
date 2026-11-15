@@ -8,7 +8,8 @@ By KolorKlinic. Free and unofficial: not made or endorsed by Corridor Digital or
 
 ## Is it for you?
 
-- **Intel Mac with an AMD Radeon GPU.** Tested on a Radeon RX 6700 XT (12 GB). Other Radeon cards should work; cards with less memory key fewer frames at once. Intel integrated graphics is untested.
+- **Intel Mac with an AMD Radeon GPU.** Tested on a Radeon RX 6700 XT (12 GB). Other recent Radeon cards (RX 5000 and 6000 series, Radeon Pro W5000/W6000) should work, and cards with less memory key fewer frames at once. Older Radeons (RX 500, Vega, Radeon Pro 500 series in iMacs and MacBook Pros) and Intel integrated graphics are untested and may be too slow to be useful.
+- **Unofficial.** Corridor Digital supports CorridorKey 2.0 only on NVIDIA RTX 30-series GPUs or newer. This port runs the same CorridorKey code and weights (the latest release, checked against Corridor's GitHub) on AMD through Metal, in fp32 instead of Corridor's bf16, so results can differ very slightly from an NVIDIA machine.
 - **64 GB of memory recommended.** The GPU can use up to 1.7× its own memory, with the rest in system RAM.
 - **macOS 14 (Sonoma) or later.**
 - **About 7 GB of disk** for CorridorKey and its Python, plus about 2.5 MB for each processed HD frame.
