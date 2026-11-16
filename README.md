@@ -6,9 +6,9 @@ From [Creative Video Tips](https://creativevideotips.com), created by Chadwick. 
 
 ## Download
 
-### [Download the installer: CorridorKey2-1.00.pkg](https://github.com/creativevideotips/cvt-corridorkey2/releases/download/v1.00/CorridorKey2-1.00.pkg)
+### [Download the installer: CorridorKey2-1.06.pkg](https://github.com/creativevideotips/cvt-corridorkey2/releases/download/v1.06/CorridorKey2-1.06.pkg)
 
-### [Download the guide (PDF)](https://github.com/creativevideotips/cvt-corridorkey2/releases/download/v1.00/CorridorKey2_Guide.pdf)
+### [Download the guide (PDF)](https://github.com/creativevideotips/cvt-corridorkey2/releases/download/v1.06/CorridorKey2_Guide.pdf)
 
 ![A green-screen shot of a dog, and the same frame keyed by CorridorKey 2 over a checkerboard](corridorkey2_example.jpg)
 
@@ -23,7 +23,7 @@ From [Creative Video Tips](https://creativevideotips.com), created by Chadwick. 
 ## Install
 
 1. Quit Resolve and Fusion Studio.
-2. Open the downloaded **CorridorKey2-1.00.pkg** and follow the Installer. It is signed and notarized by Apple, and asks for your Mac's password because plugins go in `/Library/OFX/Plugins`.
+2. Open the downloaded **CorridorKey2-1.06.pkg** and follow the Installer. It is signed and notarized by Apple, and asks for your Mac's password because plugins go in `/Library/OFX/Plugins`.
 3. Start Resolve, add **Effects > OpenFX > Creative Video Tips > CorridorKey 2** to a clip, open the node's **Setup** section and press **Install Model**. Terminal opens, asks you to accept the CorridorKey licence, then downloads CorridorKey 2.0's code from Corridor's GitHub and its weights from Hugging Face (about 5 GB), checks every file against the version this plugin was tested with, and loads the model once. You do this once per Mac.
 
 No account or token is needed.
