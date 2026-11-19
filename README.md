@@ -27,7 +27,7 @@ No account or token is needed.
 
 Put CorridorKey 2 after your clip and press **Process**. A progress window shows the frame, the chunk and the time left; Status says the same in the Inspector. The node then draws from the stored results, so playback is instant and **Output** and **Despill** change live.
 
-- **Input Is:** Rec.709 for most timelines, sRGB Linear for linear footage, ACEScg for CG renders (the output stays in ACEScg).
+- **Input Is:** what the picture coming into the node is. Rec.709 for most timelines, sRGB Linear for linear footage, ACEScg for CG renders, DWG Linear or DWG / DaVinci Intermediate in a DaVinci colour-managed project, or the camera's own log for clips still in log (Sony S-Log3, ARRI LogC3/LogC4, RED, Canon Log 2/3, Blackmagic Film Gen 5, Apple Log, DJI D-Log/D-Log M, Panasonic V-Log, ACEScct). CorridorKey keys in linear Rec.709 and the output goes back to the space picked here.
 - **Temporal Chunks:** how many frames CorridorKey keys together. Auto picks the most the GPU's memory allows (4 at HD on a 12 GB card); Status reports what it used.
 - **Output:** Premultiplied, Matte Only, Unpremultiplied (the cleaned foreground with the matte as alpha), or Source + Matte (Unpremultiplied) (your untouched picture with the matte as alpha).
 - **Hint:** a rough matte of the subject (a rectangle, Magic Mask or roto) on the Hint input, or in the source's alpha on the Edit page. At a strength of 0.3 to 0.5 it removes anything outside it and keeps CorridorKey's own edges.
